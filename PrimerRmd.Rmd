@@ -1,0 +1,23 @@
+---
+title: "PrimerRmd"
+output: html_document
+---
+
+```{r simula, include = FALSE}
+N <- rpois(1,90)
+x <- runif(N,0,1)
+y <- runif(N,0,1) 
+data <- data.frame(x,y)
+```
+
+
+```{r summary, include= FALSE}
+library(knitr)
+sum <- summary(data)
+sumary <- 
+  kable(sum)
+```
+
+```{r summary2}
+sumary
+```
