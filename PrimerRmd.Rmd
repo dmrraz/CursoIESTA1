@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r simula, include = FALSE}
-N <- rpois(1,90)
+N <- rpois(90,1)
 x <- runif(N,0,1)
 y <- runif(N,0,1) 
 data <- data.frame(x,y)
