@@ -1,0 +1,65 @@
+---
+title: "Tarea 1"
+author: "Daniel Ramírez "
+date: "18 de septiembre de 2018"
+output: pdf_document
+toc: true
+number_sections: true
+fontsize: 11pt
+geometry: margin=1in
+---
+ff
+
+### Introducción 1
+
+En esta tarea se simularon los datos a partir de las siguientes funciones:
+
+$$ N\sim Po(90)$$
+
+$$ x\sim Unif(0,1)$$
+
+$$ y\sim Unif(0,1)$$
+
+
+Se presenta una tabla con resumen y un gráfico de dispersión. 
+
+
+
+### Simulación y tablas 2
+
+```{r simula, include = FALSE}
+N <- rpois(90,1)
+x <- runif(N,0,1)
+y <- runif(N,0,1) 
+data <- data.frame(x,y)
+
+```
+```{r xtable, echo=FALSE, message=FALSE, results='asis'}
+library(xtable)
+tb <- xtable(summary(data), caption ='Estadísiticas descriptivas' )
+print.xtable(tb, caption.placement = 'top', comment = FALSE)
+```
+
+```{r mediana, echo = FALSE, results='hold', comment=NA}
+m <- round(median(data$x), digits = 2)
+Frase <- paste('En la Tabla 1 se observa que la mediana de las x es', m)
+cat(Frase)
+```
+
+### Figura 3
+
+
+```{r, include=FALSE}
+tf <- 'Gráfico dispersión'
+```
+
+```{r,  results= 'hold', echo = FALSE, fig.cap= tf }
+library(ggplot2)
+g <- ggplot(data, aes(x,y)) + geom_point()
+g
+```
+
+
+
+
+
