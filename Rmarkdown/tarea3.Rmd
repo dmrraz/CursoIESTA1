@@ -1,0 +1,99 @@
+---
+title: "Tarea 3"
+author: "Daniel"
+date: "16 de noviembre de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(Rcpp)
+library(microbenchmark)
+```
+
+## Ejercicio 1: Ordenar los datos
+a) 
+```{r filtrar, echo=TRUE}
+
+dd <- read.table('datos_rna.txt', header = T)
+dd.tidy <- NULL
+dd.tidy <- dd %>% 
+  gather(rep, n, -GeneID) %>%
+  separate(2, into = c('Rep', 'gen', 'cond')) %>%
+  spread(cond,n) %>% mutate(Rep = recode(Rep, 'REP1' = 1, 'REP2' = 2, 'REP3' = 3, 'REP4' = 4) ) %>%
+  mutate(gen = recode(gen, B = 'B73',  M = 'Mo17', BM = 'B73xMo17', MB= 'Mo17xB73') )
+
+dd.tidy %>% filter(GeneID == 'AC155377.1_FG001')
+```
+
+b) 
+```{r gráfico, echo=TRUE}
+
+
+dd.tidyg <- dd.tidy %>% filter(gen != 'Mo17xB73')
+
+ggplot(dd.tidyg, aes(x= log(m), y= log(b), colour=gen)) + geom_point(alpha=.5) + facet_wrap( ~ Rep) + geom_abline(intercept = 0)+ scale_color_brewer(palette = "Dark2") + xlab('Expresión génica de alelo M (en logs)')+ ylab('Expresión génica de alelo B (en logs)') 
+```
+
+c)  Las cuatro repeticiones muestran que las plantas tienen en su mayoría el aleo correspondiente al gen orginal, y las mixtas parecen tener una proporción similar de cada aleo. 
+
+
+## Ejercicio 2: Rcpp y benchmark
+a) 
+```{r funciones, echo=TRUE}
+
+c <- dd.tidy %>% filter(gen == 'B73xMo17') %>%  filter(GeneID == 'AC155377.1_FG001')
+
+compara <- function(x, y) {
+  m <- length(x)
+  n <- length(y)
+  # calculo el estadistico de la prueba
+  sp <- sqrt(((m-1)*sd(x)^2 + (n-1)*sd(y)^2) / (m+n-2))
+  tstat <- (mean(x) - mean(y)) / (sp*sqrt(1/m + 1/n))
+  # calculo el p-valor
+  2*(1 - pt( abs(tstat), df = n+m-2) )
+}
+
+compara(c$b,c$m)
+t.test(c$b, c$m)
+
+```
+
+-cppFunction('double comparaC(NumericVector x, NumericVector y) {
+     int  m = x.size();
+     int  z = y.size();   
+     int  sp = sqrt(((m-1)*pow(sd(x), 2.0) + (z-1)*pow(sd(y),2.0)) / (m+z-2));
+     int tstat = (mean(x) - mean(y)) / (sp*sqrt(1/m + 1/z));
+     double n = z+m-2;
+     double a = abs(tstat);
+     double pvalue = 2*(1 - pt(a,n));
+     return pvalue;
+            }')
+
+comparaC(c$b,c$m)
+
+
+
+
+b)
+```{r benchmark, echo=TRUE}
+
+mb <- microbenchmark(
+  compara(c$b,c$m),
+  t.test(c$b, c$m)
+)
+
+
+autoplot(mb)
+```
+
+c) Compara va ser más eficiente que la función t-test.
+
+d) La baja cantidad de observaciones. 
+
+
+
+
